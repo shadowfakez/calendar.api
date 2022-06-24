@@ -7,6 +7,8 @@ use App\Http\Requests\CalendarRequest;
 use App\Http\Resources\CalendarResource;
 use App\Models\Calendar;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
+use Symfony\Component\HttpFoundation\Response as ResponseAlias;
 
 class CalendarController extends Controller
 {
@@ -51,9 +53,11 @@ class CalendarController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(CalendarRequest $request, Calendar $calendar)
     {
-        //
+        $calendar->update($request->validated());
+
+        return new CalendarResource($calendar);;
     }
 
     /**
@@ -62,8 +66,10 @@ class CalendarController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy(Calendar $calendar)
     {
-        //
+        $calendar->delete();
+
+        return response(null, Response::HTTP_NO_CONTENT);
     }
 }
