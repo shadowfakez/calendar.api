@@ -4,10 +4,17 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\CalendarRequest;
+use App\Http\Requests\IntervalRequest;
 use App\Http\Resources\CalendarResource;
 use App\Models\Calendar;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+/*use Spatie\Period\Period;
+use Spatie\Period\Precision;*/
+
+use Spatie\Period\Period;
+use Spatie\Period\Precision;
 use Symfony\Component\HttpFoundation\Response as ResponseAlias;
 
 class CalendarController extends Controller
@@ -17,21 +24,34 @@ class CalendarController extends Controller
      *
      * @return \Illuminate\Http\Resources\Json\AnonymousResourceCollection
      */
-    public function index()
+    public function index(IntervalRequest $request)
     {
-        return CalendarResource::collection(Calendar::all());
+
+        //dd(Carbon::parse($element->date)->addMinutes($element->duration)->format('Y-m-d H:i:s')); - добавить время
+
+        $calendar = Calendar::timeRangeQuery($request);
+
+        return CalendarResource::collection($calendar);
     }
 
     /**
      * Store a newly created resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
+     * @return CalendarResource|\Illuminate\Http\Response
      */
     public function store(CalendarRequest $request)
     {
-        $newEntry = Calendar::create($request->validated());
+        $notAuth = "unregistered user";
 
+        if ($notAuth) {
+            //$checkOverlaps = array_search(1, Calendar::checkOverlapsResult($request));
+
+            if (in_array(1, Calendar::checkOverlapsResult($request))) {
+                return response('There is already a record in this timeslot. Choose a different time or log in.');
+            }
+        }
+        $newEntry = Calendar::create($request->validated());
         return new CalendarResource($newEntry);
     }
 
@@ -39,25 +59,30 @@ class CalendarController extends Controller
      * Display the specified resource.
      *
      * @param  int  $id
-     * @return \Illuminate\Http\Response
+     * @return CalendarResource
      */
-    public function show($id)
+    public function show(int $id)
     {
         return new CalendarResource(Calendar::findOrFail($id));
     }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
+/**
+* Update the specified resource in storage.
+*
+* @param  \Illuminate\Http\Request  $request
+* @param  int  $id
+* @return CalendarResource|\Illuminate\Http\Response
+*/
     public function update(CalendarRequest $request, Calendar $calendar)
     {
-        $calendar->update($request->validated());
+        if ($calendar->checkDifference() > 120) {
 
-        return new CalendarResource($calendar);;
+            $calendar->update($request->validated());
+
+            return new CalendarResource($calendar);
+        }
+
+        return response('You can\'t update the entry - less than 3 hours left');
     }
 
     /**
@@ -68,8 +93,13 @@ class CalendarController extends Controller
      */
     public function destroy(Calendar $calendar)
     {
-        $calendar->delete();
+        if ($calendar->checkDifference() > 120) {
 
-        return response(null, Response::HTTP_NO_CONTENT);
+            $calendar->delete();
+
+            return response(null, Response::HTTP_NO_CONTENT);
+        }
+
+        return response('You can\'t delete the entry - less than 3 hours left');
     }
 }

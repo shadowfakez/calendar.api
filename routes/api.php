@@ -1,7 +1,6 @@
 <?php
 
 use App\Http\Controllers\Api\CalendarController;
-use App\Http\Controllers\Api\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -20,8 +19,6 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-//Route::get('/users', [UserController::class, 'index']);
-
 Route::apiResources([
-    'calendar' => CalendarController::class,
+    '/calendar' => CalendarController::class,
 ]);
