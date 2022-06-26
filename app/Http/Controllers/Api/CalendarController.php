@@ -53,7 +53,7 @@ class CalendarController extends Controller
      */
     public function update(CalendarRequest $request, Calendar $calendar)
     {
-        if ($calendar->checkDifference() > 120) {
+        if ($calendar->checkDifference() > 180) {
 
             $calendar->update($request->validated());
 
@@ -73,7 +73,7 @@ class CalendarController extends Controller
      */
     public function destroy(Calendar $calendar)
     {
-        if ($calendar->checkDifference() > 120) {
+        if ($calendar->checkDifference() > 180) {
 
             $calendar->delete();
 
