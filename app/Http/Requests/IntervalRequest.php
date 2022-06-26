@@ -24,8 +24,8 @@ class IntervalRequest extends FormRequest
     public function rules()
     {
         return [
-            'date_start' => 'date_format:"Y-m-d H:i"|nullable',
-            'date_end' => 'date_format:"Y-m-d H:i"|nullable',
+            'date_start' => 'date_format:"Y-m-d H:i:s"|nullable',
+            'date_end' => 'date_format:"Y-m-d H:i:s"|nullable',
         ];
     }
 }
