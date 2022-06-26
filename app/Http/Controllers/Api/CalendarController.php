@@ -10,9 +10,11 @@ use App\Models\Calendar;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+
 /*use Spatie\Period\Period;
 use Spatie\Period\Precision;*/
 
+use Illuminate\Support\Facades\Auth;
 use Spatie\Period\Period;
 use Spatie\Period\Precision;
 use Symfony\Component\HttpFoundation\Response as ResponseAlias;
@@ -42,9 +44,7 @@ class CalendarController extends Controller
      */
     public function store(CalendarRequest $request)
     {
-        $notAuth = "unregistered user";
-
-        if ($notAuth) {
+        if (!Auth::check()) {
             if (in_array(1, Calendar::checkOverlapsResult($request))) {
                 return response('There is already a record in this timeslot. Choose a different time or log in.');
             }
@@ -54,23 +54,12 @@ class CalendarController extends Controller
     }
 
     /**
-     * Display the specified resource.
+     * Update the specified resource in storage.
      *
+     * @param  \Illuminate\Http\Request  $request
      * @param  int  $id
-     * @return CalendarResource
+     * @return CalendarResource|\Illuminate\Http\Response
      */
-    public function show(int $id)
-    {
-        return new CalendarResource(Calendar::findOrFail($id));
-    }
-
-/**
-* Update the specified resource in storage.
-*
-* @param  \Illuminate\Http\Request  $request
-* @param  int  $id
-* @return CalendarResource|\Illuminate\Http\Response
-*/
     public function update(CalendarRequest $request, Calendar $calendar)
     {
         if ($calendar->checkDifference() > 120) {
