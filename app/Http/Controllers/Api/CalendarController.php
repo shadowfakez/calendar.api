@@ -45,8 +45,6 @@ class CalendarController extends Controller
         $notAuth = "unregistered user";
 
         if ($notAuth) {
-            //$checkOverlaps = array_search(1, Calendar::checkOverlapsResult($request));
-
             if (in_array(1, Calendar::checkOverlapsResult($request))) {
                 return response('There is already a record in this timeslot. Choose a different time or log in.');
             }
