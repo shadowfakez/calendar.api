@@ -7,17 +7,9 @@ use App\Http\Requests\CalendarRequest;
 use App\Http\Requests\IntervalRequest;
 use App\Http\Resources\CalendarResource;
 use App\Models\Calendar;
-use Carbon\Carbon;
-use Illuminate\Http\Request;
 use Illuminate\Http\Response;
-
-/*use Spatie\Period\Period;
-use Spatie\Period\Precision;*/
-
 use Illuminate\Support\Facades\Auth;
-use Spatie\Period\Period;
-use Spatie\Period\Precision;
-use Symfony\Component\HttpFoundation\Response as ResponseAlias;
+
 
 class CalendarController extends Controller
 {
@@ -28,9 +20,6 @@ class CalendarController extends Controller
      */
     public function index(IntervalRequest $request)
     {
-
-        //dd(Carbon::parse($element->date)->addMinutes($element->duration)->format('Y-m-d H:i:s')); - добавить время
-
         $calendar = Calendar::timeRangeQuery($request);
 
         return CalendarResource::collection($calendar);
@@ -40,13 +29,15 @@ class CalendarController extends Controller
      * Store a newly created resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @return CalendarResource|\Illuminate\Http\Response
+     * @return \Illuminate\Http\JsonResponse|CalendarResource
      */
     public function store(CalendarRequest $request)
     {
         if (!Auth::check()) {
             if (in_array(1, Calendar::checkOverlapsResult($request))) {
-                return response('There is already a record in this timeslot. Choose a different time or log in.');
+                return response()->json([
+                    'message' => 'There is already a record in this timeslot. Choose a different time or login.'
+                ], 401);
             }
         }
         $newEntry = Calendar::create($request->validated());
@@ -58,7 +49,7 @@ class CalendarController extends Controller
      *
      * @param  \Illuminate\Http\Request  $request
      * @param  int  $id
-     * @return CalendarResource|\Illuminate\Http\Response
+     * @return CalendarResource|\Illuminate\Http\JsonResponse
      */
     public function update(CalendarRequest $request, Calendar $calendar)
     {
@@ -69,14 +60,16 @@ class CalendarController extends Controller
             return new CalendarResource($calendar);
         }
 
-        return response('You can\'t update the entry - less than 3 hours left');
+        return response()->json([
+            'message' => 'You can\'t update the entry - less than 3 hours left'
+        ]);
     }
 
     /**
      * Remove the specified resource from storage.
      *
      * @param  int  $id
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\JsonResponse
      */
     public function destroy(Calendar $calendar)
     {
@@ -84,9 +77,11 @@ class CalendarController extends Controller
 
             $calendar->delete();
 
-            return response(null, Response::HTTP_NO_CONTENT);
+            return response()->json(null, 204);
         }
 
-        return response('You can\'t delete the entry - less than 3 hours left');
+        return response()->json([
+            'message' => 'You can\'t delete the entry - less than 3 hours left'
+        ]);
     }
 }
