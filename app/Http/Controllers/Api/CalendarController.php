@@ -33,7 +33,7 @@ class CalendarController extends Controller
      */
     public function store(CalendarRequest $request)
     {
-        if (!Auth::check()) {
+        if (!Auth('sanctum')->user()) {
             if (in_array(1, Calendar::checkOverlapsResult($request))) {
                 return response()->json([
                     'message' => 'There is already a record in this timeslot. Choose a different time or login.'
